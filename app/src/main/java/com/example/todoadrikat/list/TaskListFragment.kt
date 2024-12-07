@@ -1,5 +1,6 @@
 package com.example.todoadrikat.list
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
+import com.example.todoadrikat.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.UUID
 
@@ -50,8 +52,8 @@ class TaskListFragment : Fragment() {
         // Set the Add Button to add a task
         val floatingActionButton = rootView.findViewById<FloatingActionButton>(R.id.primaryFloatingActionButton)
         floatingActionButton.setOnClickListener {
-            taskList += Task(UUID.randomUUID().toString(), "Task ${taskList.size} added")
-            refreshAdapter()
+            val intent = Intent(context, DetailActivity::class.java)
+            startActivity(intent)
         }
 
         // Set up the onClickDelete
