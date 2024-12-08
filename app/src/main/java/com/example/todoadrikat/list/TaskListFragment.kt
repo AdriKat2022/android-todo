@@ -6,6 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
 import com.example.todoadrikat.detail.DetailActivity
@@ -32,12 +35,23 @@ class TaskListFragment : Fragment() {
         Task("id_3", "Task 3")
     )
     private val adapter = TaskListAdapter()
+    private lateinit var createTask : ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-//            param1 = it.getString(ARG_PARAM1)
-//            param2 = it.getString(ARG_PARAM2)
+
+        // Correctly defines the createTask activity launcher
+        createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                result ->
+            // Handle task append
+            val task = result.data?.getSerializableExtra(TASK_KEY) as Task?
+
+            if (task != null) {
+                addNewTask(task)
+            }
+            else {
+                // Warn the user something went wrong
+            }
         }
     }
 
@@ -51,9 +65,11 @@ class TaskListFragment : Fragment() {
 
         // Set the Add Button to add a task
         val floatingActionButton = rootView.findViewById<FloatingActionButton>(R.id.primaryFloatingActionButton)
+
+        val intent = Intent(context, DetailActivity::class.java)
         floatingActionButton.setOnClickListener {
-            val intent = Intent(context, DetailActivity::class.java)
-            startActivity(intent)
+            // On click of the floating button, we start the create task launcher
+            createTask.launch(intent)
         }
 
         // Set up the onClickDelete
@@ -71,28 +87,17 @@ class TaskListFragment : Fragment() {
         recyclerView.adapter = adapter
     }
 
+    private fun addNewTask(newTask : Task){
+        taskList += newTask
+        refreshAdapter()
+    }
+
     private fun refreshAdapter(){
         adapter.currentList = taskList
         adapter.notifyDataSetChanged()
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment TaskListFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            TaskListFragment().apply {
-                arguments = Bundle().apply {
-//                    putString(ARG_PARAM1, param1)
-//                    putString(ARG_PARAM2, param2)
-                }
-            }
+        const val TASK_KEY = "task"
     }
 }
