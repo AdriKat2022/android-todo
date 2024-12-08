@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
 import com.example.todoadrikat.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.UUID
 
 class TaskListFragment : Fragment() {
 
@@ -92,6 +93,19 @@ class TaskListFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val recyclerView = view.findViewById<RecyclerView>(R.id.main_recycler_view)
         recyclerView.adapter = adapter
+
+        // Check for incoming data from other apps
+        var intent = requireActivity().intent
+        if (Intent.ACTION_SEND == intent.action && intent.type == "text/plain") {
+            val importedTask = Task(
+                id = UUID.randomUUID().toString(),
+                title = "New imported task",
+                description = intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+            )
+            intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra(TASK_KEY, importedTask)
+            createTask.launch(intent)
+        }
     }
 
     private fun addNewTask(newTask : Task){
