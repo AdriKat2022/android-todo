@@ -7,34 +7,33 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
 import com.example.todoadrikat.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.util.UUID
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-//private const val ARG_PARAM1 = "param1"
-//private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [TaskListFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class TaskListFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-//    private var param1: String? = null
-//    private var param2: String? = null
+
+    private val adapterListener: TaskListListener = object: TaskListListener {
+        override fun onClickDelete(task: Task) {
+            taskList -= task
+            refreshAdapter()
+        }
+
+        override fun onClickEdit(task: Task) {
+            val intent = Intent(context, DetailActivity::class.java)
+            intent.putExtra(TASK_KEY, task)
+            editTask.launch(intent)
+        }
+    }
+    private val adapter = TaskListAdapter(adapterListener)
+
     private var taskList = listOf(
         Task("id_1", "Task 1", description = "Description"),
         Task("id_2", "Task 2"),
         Task("id_3", "Task 3")
     )
-    private val adapter = TaskListAdapter()
     private lateinit var createTask : ActivityResultLauncher<Intent>
     private lateinit var editTask : ActivityResultLauncher<Intent>
 
@@ -84,18 +83,6 @@ class TaskListFragment : Fragment() {
             // On click of the floating button, we start the create task launcher
             intent.removeExtra(TASK_KEY)
             createTask.launch(intent)
-        }
-
-        // Set up onClickEdit
-        adapter.onClickEdit = { task: Task ->
-            intent.putExtra(TASK_KEY, task)
-            editTask.launch(intent)
-        }
-
-        // Set up the onClickDelete
-        adapter.onClickDelete = { task: Task ->
-            taskList -= task
-            refreshAdapter()
         }
 
         return rootView

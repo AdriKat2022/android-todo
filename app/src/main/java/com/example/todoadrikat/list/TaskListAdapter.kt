@@ -8,10 +8,13 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
 
-class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
+interface TaskListListener {
+    fun onClickDelete(task: Task)
+    fun onClickEdit(task: Task)
+}
+
+class TaskListAdapter(val listener: TaskListListener) : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
     var currentList: List<Task> = emptyList()
-    var onClickEdit: (Task) -> Unit = {}
-    var onClickDelete: (Task) -> Unit = {}
 
     // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -23,10 +26,10 @@ class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
         fun bind(task: Task) {
             textView.text = task.title
             editButton.setOnClickListener{
-                onClickEdit(task)
+                listener.onClickEdit(task)
             }
             deleteButton.setOnClickListener{
-                onClickDelete(task)
+                listener.onClickDelete(task)
             }
         }
     }
