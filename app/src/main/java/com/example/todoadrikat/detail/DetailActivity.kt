@@ -1,6 +1,7 @@
 package com.example.todoadrikat.detail
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +35,7 @@ class DetailActivity : ComponentActivity() {
             TodoAdriKatTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Detail(
+                        initialTask = intent.getSerializableExtra(TASK_KEY) as Task?,
                         onValidate = { newTask: Task ->
                             intent.putExtra(TASK_KEY, newTask)
                             setResult(RESULT_OK, intent)
@@ -49,13 +50,19 @@ class DetailActivity : ComponentActivity() {
 }
 
 @Composable
-fun Detail(onValidate: (Task) -> Unit, modifier: Modifier = Modifier) {
-    var task by remember { mutableStateOf(Task(id = "", title = "")) }
+fun Detail(initialTask: Task?, onValidate: (Task) -> Unit, modifier: Modifier = Modifier) {
+    val newTask = Task(id=UUID.randomUUID().toString(), title="New task!")
+    var task by remember {
+        mutableStateOf(initialTask?: newTask)
+    }
 
     Column (
         modifier = Modifier.padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Text(
+            text = task.id
+        )
         OutlinedTextField(
             label = {
                 Text(text = "Task Title")
@@ -82,8 +89,7 @@ fun Detail(onValidate: (Task) -> Unit, modifier: Modifier = Modifier) {
         )
         Button (
             onClick = {
-                val newTask = task.copy(id = UUID.randomUUID().toString())
-                onValidate(newTask)
+                onValidate(task)
             }
         )
         {
@@ -100,8 +106,5 @@ fun Detail(onValidate: (Task) -> Unit, modifier: Modifier = Modifier) {
 @Composable
 fun DetailPreview() {
     TodoAdriKatTheme {
-        Detail(
-            onValidate = {},
-        )
     }
 }

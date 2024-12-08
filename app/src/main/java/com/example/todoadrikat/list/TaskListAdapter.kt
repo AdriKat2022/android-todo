@@ -10,16 +10,21 @@ import com.example.todoadrikat.R
 
 class TaskListAdapter : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
     var currentList: List<Task> = emptyList()
+    var onClickEdit: (Task) -> Unit = {}
     var onClickDelete: (Task) -> Unit = {}
 
     // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private var textView: TextView = itemView.findViewById<TextView>(R.id.task_title)
+        private var editButton: ImageButton = itemView.findViewById<ImageButton>(R.id.editTask)
         private var deleteButton: ImageButton = itemView.findViewById<ImageButton>(R.id.deleteTask)
 
         fun bind(task: Task) {
             textView.text = task.title
+            editButton.setOnClickListener{
+                onClickEdit(task)
+            }
             deleteButton.setOnClickListener{
                 onClickDelete(task)
             }

@@ -36,11 +36,12 @@ class TaskListFragment : Fragment() {
     )
     private val adapter = TaskListAdapter()
     private lateinit var createTask : ActivityResultLauncher<Intent>
+    private lateinit var editTask : ActivityResultLauncher<Intent>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Correctly defines the createTask activity launcher
+        // Correctly defines the createTask and editTask activity launchers
         createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 result ->
             // Handle task append
@@ -48,6 +49,18 @@ class TaskListFragment : Fragment() {
 
             if (task != null) {
                 addNewTask(task)
+            }
+            else {
+                // Warn the user something went wrong
+            }
+        }
+        editTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                result ->
+            // Handle task append
+            val task = result.data?.getSerializableExtra(TASK_KEY) as Task?
+
+            if (task != null) {
+                updateNewTask(task)
             }
             else {
                 // Warn the user something went wrong
@@ -69,7 +82,14 @@ class TaskListFragment : Fragment() {
         val intent = Intent(context, DetailActivity::class.java)
         floatingActionButton.setOnClickListener {
             // On click of the floating button, we start the create task launcher
+            intent.removeExtra(TASK_KEY)
             createTask.launch(intent)
+        }
+
+        // Set up onClickEdit
+        adapter.onClickEdit = { task: Task ->
+            intent.putExtra(TASK_KEY, task)
+            editTask.launch(intent)
         }
 
         // Set up the onClickDelete
@@ -89,6 +109,14 @@ class TaskListFragment : Fragment() {
 
     private fun addNewTask(newTask : Task){
         taskList += newTask
+        refreshAdapter()
+    }
+
+    private fun updateNewTask(task: Task) {
+        // Updates the existing task according to its ID
+        taskList = taskList.map {
+            if (it.id == task.id) task else it
+        }
         refreshAdapter()
     }
 
