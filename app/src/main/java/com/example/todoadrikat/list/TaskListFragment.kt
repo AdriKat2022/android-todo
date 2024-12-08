@@ -126,6 +126,17 @@ class TaskListFragment : Fragment() {
         adapter.notifyDataSetChanged()
     }
 
+    private fun shareTask(task: Task){
+        val sendIntent: Intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            putExtra(Intent.EXTRA_TEXT, "${task.title}: ${task.description}")
+            type = "text/plain"
+        }
+
+        val shareIntent = Intent.createChooser(sendIntent, null)
+        startActivity(shareIntent)
+    }
+
     companion object {
         const val TASK_KEY = "task"
     }

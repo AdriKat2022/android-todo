@@ -1,10 +1,12 @@
 package com.example.todoadrikat.list
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.todoadrikat.R
 
@@ -16,7 +18,6 @@ interface TaskListListener {
 class TaskListAdapter(val listener: TaskListListener) : RecyclerView.Adapter<TaskListAdapter.TaskViewHolder>() {
     var currentList: List<Task> = emptyList()
 
-    // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         private var textView: TextView = itemView.findViewById<TextView>(R.id.task_title)
@@ -24,6 +25,20 @@ class TaskListAdapter(val listener: TaskListListener) : RecyclerView.Adapter<Tas
         private var deleteButton: ImageButton = itemView.findViewById<ImageButton>(R.id.deleteTask)
 
         fun bind(task: Task) {
+            textView.setOnLongClickListener {
+                // Create the share intent
+                val context = it.context
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TEXT, "${task.title}: ${task.description}")
+                }
+
+                // Start the share intent
+                context.startActivity(Intent.createChooser(shareIntent, "Share Task"))
+
+                // Return true to indicate the long-click was handled
+                true
+            }
             textView.text = task.title
             editButton.setOnClickListener{
                 listener.onClickEdit(task)
