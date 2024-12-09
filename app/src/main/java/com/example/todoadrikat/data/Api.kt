@@ -1,5 +1,6 @@
 package com.example.todoadrikat.data
 
+import android.net.http.HttpResponseCache
 import com.example.todoadrikat.list.Task
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
@@ -27,7 +28,7 @@ interface TasksWebService {
     @POST("/rest/v2/tasks/{id}")
     suspend fun update(@Body task: Task, @Path("id") id: String = task.id): Response<Task>
     @DELETE("/rest/v2/tasks/{id}")
-    suspend fun delete(@Body task: Task, @Path("id") id: String = task.id): Response<Unit>
+    suspend fun delete(@Path("id") id: String): Response<Unit>
 }
 
 object Api {

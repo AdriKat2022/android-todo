@@ -24,8 +24,7 @@ class TaskListFragment : Fragment() {
 
     private val adapterListener: TaskListListener = object: TaskListListener {
         override fun onClickDelete(task: Task) {
-            taskList -= task
-            refreshAdapter()
+            viewModel.delete(task)
         }
 
         override fun onClickEdit(task: Task) {
@@ -36,11 +35,6 @@ class TaskListFragment : Fragment() {
     }
     private val adapter = TaskListAdapter(adapterListener)
 
-    private var taskList = listOf(
-        Task("id_1", "Task 1", description = "Description"),
-        Task("id_2", "Task 2"),
-        Task("id_3", "Task 3")
-    )
     private lateinit var createTask : ActivityResultLauncher<Intent>
     private lateinit var editTask : ActivityResultLauncher<Intent>
 
@@ -84,16 +78,20 @@ class TaskListFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         val rootView = inflater.inflate(R.layout.fragment_task_list, container, false)
-        adapter.currentList = taskList
 
         // Set the Add Button to add a task
         val floatingActionButton = rootView.findViewById<FloatingActionButton>(R.id.primaryFloatingActionButton)
+        val refreshButton = rootView.findViewById<FloatingActionButton>(R.id.refreshFloatingActionButton)
 
         val intent = Intent(context, DetailActivity::class.java)
         floatingActionButton.setOnClickListener {
             // On click of the floating button, we start the create task launcher
             intent.removeExtra(TASK_KEY)
             createTask.launch(intent)
+        }
+
+        refreshButton.setOnClickListener {
+            viewModel.refresh()
         }
 
         userTextView = rootView.findViewById<TextView>(R.id.userTextView)
@@ -121,8 +119,9 @@ class TaskListFragment : Fragment() {
 
         // Sets up the observer that will automatically refresh the adapter when the list changes
         lifecycleScope.launch {
-            viewModel.tasksStateFlow.collect { _ ->
-                refreshAdapter()
+            viewModel.tasksStateFlow.collect { newList ->
+                adapter.currentList = newList
+                adapter.notifyDataSetChanged()
             }
         }
     }
@@ -139,32 +138,15 @@ class TaskListFragment : Fragment() {
             Log.i(null, "user Collected !")
             val user = userResponse.body()
             userTextView.text = user?.name
-
-            val tasksResponse = Api.tasksWebService.fetchTasks()
-            val tasks = tasksResponse.body()
-            taskList = tasks ?: taskList
-            Log.i(null, "fetched from todo list app!")
-
-            refreshAdapter()
         }
     }
 
     private fun addNewTask(newTask : Task){
-        taskList += newTask
-        refreshAdapter()
+        viewModel.add(newTask)
     }
 
     private fun updateNewTask(task: Task) {
-        // Updates the existing task according to its ID
-        taskList = taskList.map {
-            if (it.id == task.id) task else it
-        }
-        refreshAdapter()
-    }
-
-    private fun refreshAdapter(){
-        adapter.currentList = taskList
-        adapter.notifyDataSetChanged()
+        viewModel.update(task)
     }
 
     private fun shareTask(task: Task){
